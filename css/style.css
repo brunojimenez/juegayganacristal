@@ -12254,6 +12254,14 @@ footer a:focus {
     max-width: 10rem;
 }
 
+@media (min-width: 320px) {
+    .masthead.inter {
+        /* background-color: #f8f9fa; */
+        padding-top: 6rem;
+        padding-bottom: 3rem;
+    }
+}
+
 @media (min-width: 576px) {
     .masthead .masthead-device-mockup .circle {
         width: 70%;
