@@ -145,7 +145,7 @@ class Award {
             return "";
         }
 
-        $query = "UPDATE " . $this->table_name . " SET token_id = \"" . $code . "\" WHERE id = \"" . $this->id . "\"";
+        $query = "UPDATE " . $this->table_name . " SET token_id = \"" . $code . "\", updated_at = now() WHERE id = \"" . $this->id . "\"";
         if ($GLOBALS['debug'] ) echo $query . "\n";
         $this->log->info("assign", $query);
 
