@@ -70,8 +70,8 @@ app.controller('loginCtrl', function($scope, $http, $rootScope, $routeParams, $i
                 } else {
                     console.log("[goPlay] codigo quemado");
 
-                    $scope.text1 = "Código usado";
-                    $scope.text2 = "Intenta con otro código Cristal";
+                    $scope.text1 = "C\u00F3digo usado";
+                    $scope.text2 = "Intenta con otro c\u00F3digo Cristal";
 
                     $scope.showModal();
                     $scope.myForm.code = "";
@@ -79,8 +79,8 @@ app.controller('loginCtrl', function($scope, $http, $rootScope, $routeParams, $i
             } else {
                 console.log("[goPlay] codigo invalido");
                 
-                $scope.text1 = "Código inválido";
-                $scope.text2 = "Intenta con otro código Cristal";
+                $scope.text1 = "C\u00F3digo inv\u00E1lido";
+                $scope.text2 = "Intenta con otro c\u00F3digo Cristal";
 
                 $scope.showModal();
                 $scope.myForm.code = "";
