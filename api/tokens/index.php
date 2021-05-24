@@ -2,6 +2,7 @@
 include_once '../config/config.php';
 include_once '../config/database.php';
 include_once '../objects/token.php';
+include_once '../objects/award.php';
 include_once '../objects/db_log.php';
 include_once '../util/util.php';
 
@@ -62,35 +63,10 @@ function doPost($db, $request, $json) {
     $data = $token->update();
 
     if ($data->status == "OK") {
-        switch ($token->wins) {
-            case '9':
-                $data->award = "Camisetas selección";
-                break;
-            case '9':
-                $data->award = "Pelotas Adidas";
-                break;
-            case '9':
-                $data->award = "Loncheras";
-                break;
-            case '8':
-                $data->award = "Tablas madera";
-                break;
-            case '7':
-                $data->award = "Cuchillos";
-                break;
-            case '6':
-                $data->award = "Jengas";
-                break;
-            case '5':
-                $data->award = "Mascarillas";
-                break;
-            case '4':
-                $data->award = "Shop de regalo";
-                break;
-            default:
-                $data->award = "";
-                break;
-        }
+        $award = new Award($db);
+        $data->award = $award->assign($token->bar, $token->code, $token->wins);
+    } else {
+        $data->award = "";
     }
     
     Token::writeJsonResponse($data);
