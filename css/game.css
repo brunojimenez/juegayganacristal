@@ -15,7 +15,7 @@
 .card-game {
 	float: left;
 	width: 33.333333%;
-	height: 15vh;
+	height: 16vh;
 	padding: .5rem;
 	text-align: center;
 	display: block;
@@ -96,17 +96,17 @@
 
 .modal {
 	display: none;
-	position: relative;
-	width: 500px;
-	height: 400px;
-	max-height: 90%;
-	max-width: 90%;
-	min-height: 380px;
-	margin: 0 auto;
-	background: white;
-	top: 50%;
-	transform: translateY(-50%);
-	padding: 30px 10px;
+    position: relative;
+    width: 500px;
+    height: auto;
+    max-height: 100%;
+    max-width: 100%;
+    min-height: 380px;
+    margin: 0 auto;
+    background: white;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 30px;
 }
 
 .modal .winner {
@@ -287,6 +287,6 @@
 	}
 
 	.card-game {
-		padding: .1rem;
+		padding: .2rem;
 	}
 }
