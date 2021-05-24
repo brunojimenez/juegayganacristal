@@ -69,16 +69,29 @@ app.controller('loginCtrl', function($scope, $http, $rootScope, $routeParams, $i
                     return true;
                 } else {
                     console.log("[goPlay] codigo quemado");
+
+                    $scope.text1 = "Código usado";
+                    $scope.text2 = "Intenta con otro código Cristal";
+
                     $scope.showModal();
                     $scope.myForm.code = "";
                 }
             } else {
                 console.log("[goPlay] codigo invalido");
+                
+                $scope.text1 = "Código inválido";
+                $scope.text2 = "Intenta con otro código Cristal";
+
                 $scope.showModal();
                 $scope.myForm.code = "";
             }
         }, function(response) {
             console.log("[goPlay] error:", response);
+
+            $scope.text1 = "¡Ops un error!";
+            $scope.text2 = "Ha ocurrido un error inesperado, intentalo nuevamente";
+
+            $scope.showModal();
             return false; 
         });
 
@@ -120,13 +133,14 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     // CONFIG
 
-    $scope.counterMax = 10;
-    $scope.errorsMax = 6;
+    $scope.counterMax = 60;
+    $scope.errorsMax = 10;
 
     // VARS
 
     $scope.counter = 0;
-    $scope.errors = 0;
+    $scope.match = 0;
+    $scope.notMatch = 0;
 
     // COUNTER
 
@@ -139,8 +153,7 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
         stopped = $timeout(function() {
             $scope.counter++;
             if ($scope.counter >= $scope.counterMax) {
-                $scope.stop();
-                $scope.lose();
+                $scope.end();
             } else {
                 $scope.countup(); 
             }
@@ -165,10 +178,6 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
         $scope.$game.html($scope.html);
         $scope.$memoryCards = $(".card-game");
 
-        // prevent double win/lose
-        $scope.$win.hide();
-        $scope.$lose.hide();
-
         $scope.paused = false;
         $scope.guess = null;
     };
@@ -192,11 +201,19 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
                 _.guess = $(this).attr("data-id");
             } else if(_.guess == $(this).attr("data-id") && !$(this).hasClass("picked")){
                 console.log("[cardClicked] match!");
+
+                $scope.match++;
+                
                 $(".picked").addClass("matched");
                 _.guess = null;
             } else {
                 console.log("[cardClicked] not match");
-                $scope.notMatch();
+                                
+                $scope.notMatch++;
+                console.log("[cardClicked] check", $scope.notMatch, $scope.errorsMax);
+                if ($scope.notMatch >= $scope.errorsMax) {
+                    $scope.end();
+                }
 
                 _.guess = null;
                 _.paused = true;
@@ -207,120 +224,97 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
             }
 
             // win check
-            if($(".matched").length == $(".card-game").length){
-                _.win();
+            if($(".matched").length == $(".card-game").length) {
+                _.end();
             }
         }
     };
 
-    $scope.notMatch = function() {
-        $scope.errors++;
+    $scope.end = function() {
+        console.log("[end] start");
 
-        if ($scope.errors >= $scope.errorsMax) {
-            $scope.lose();
-        }
-    }
-
-    $scope.win = function() {
-        console.log("[win] start");
+        $scope.stop(); // stop counter
         $scope.paused = true;
 
-        $http({
-            url: "api/", 
-            method: "POST",
-            params: {
-                code: $cookies.get("code"),
-                name: $cookies.get("name"),
-                rut: $cookies.get("rut"),
-                email: $cookies.get("email"),
-                code: $cookies.get("code"),
-                bar: $scope.params.barId,
-                time_elapsed: $scope.counter,
-                play_errors: $scope.errors
-            }
-        }).then(function(response) {
-            console.log("[win] success:", response);
-            $data = response.data;
-            if ($data.status == "OK") {
-                console.log("[win] burned:", $row.burned);
-                setTimeout(function(){
-                    $scope.showModalWin();
-                    $scope.$game.fadeOut();
-                }, 1000);
-            } else {
-                // TODO: ERROR
-            }
-        }, function(response) {
-            console.log("[goPlay] error:", response);
-            // TODO: ERROR
-            return false; 
-        });
-    };
+        $data = {
+            code: $cookies.get("code"),
+            name: $cookies.get("name"),
+            rut: $cookies.get("rut"),
+            email: $cookies.get("email"),
+            code: $cookies.get("code"),
+            bar: $scope.params.barId,
+            time_elapsed: $scope.counter,
+            wins: $scope.match
+        };
 
-    $scope.lose = function() {
-        console.log("[lose] start");
-        $scope.paused = true;
+        console.log("[end] data:", $data);
 
         $http({
             url: "api/tokens/", 
-            method: "PUT",
-            params: {
-                code: $cookies.get("code"),
-                name: $cookies.get("name"),
-                rut: $cookies.get("rut"),
-                email: $cookies.get("email"),
-                code: $cookies.get("code"),
-                bar: $scope.params.barId,
-                time_elapsed: $scope.counter,
-                play_errors: $scope.errors
-            }
+            method: "POST",
+            data: $data
         }).then(function(response) {
-            console.log("[lose] success:", response);
+            console.log("[end] success:", response);
             $data = response.data;
             if ($data.status == "OK") {
-                console.log("[lose] burned:", $row.burned);
+                
+                $award = $data.award;
+                console.log("[end] burned:", $award);
+
+                // check awards 
+                if ($award) {
+                    setTimeout(function(){
+                        $scope.text1 = "¡Ganaste!";
+                        $scope.text2 = "Has ganado: " + $award + ". Con el código " + $cookies.get("code");
+                        $scope.text3 = "Debes cobrarlo en los próximos 15 minutos acercandote a la barra y mostrando este resultado.";
+                        setTimeout(function(){
+                            $scope.showModal();
+                            $scope.$game.fadeOut();
+                        }, 1000);
+                    }, 1000);
+                } else {
+                    $scope.text1 = "¡Sigue participando!";
+                    $scope.text2 = "Intentalo nuevamente con otro código Cristal";
+                    $scope.text3 = "";
+                    setTimeout(function(){
+                        $scope.showModal();
+                        $scope.$game.fadeOut();
+                    }, 1000);
+                }
+            } else {
+                $scope.text1 = "¡Ops un error!";
+                $scope.text2 = "Ha ocurrido un error inesperado, intentalo nuevamente";
+                $scope.text3 = "Algo ha ocurrido en el servidor que no ha podido procesar tu solicitud.";
                 setTimeout(function(){
-                    $scope.showModalLose();
+                    $scope.showModal();
                     $scope.$game.fadeOut();
                 }, 1000);
-            } else {
-                // TODO: ERROR
             }
         }, function(response) {
-            console.log("[goPlay] error:", response);
-            // TODO: ERROR
-            return false; 
+            console.log("[end] error:", response);
+            $scope.text1 = "¡Ops un error!";
+            $scope.text2 = "Ha ocurrido un error inesperado, intentalo nuevamente";
+            $scope.text3 = "Verifica que tu conexión sea estable.";
+            setTimeout(function(){
+                $scope.showModal();
+                $scope.$game.fadeOut();
+            }, 1000);
         });
-    }
+    };
 
-    $scope.showModalWin = function() {
-        $scope.$win.show();
+    $scope.showModal = function() {
         $scope.$overlay.show();
         $scope.$modal.fadeIn("slow");
     };
 
-    $scope.hideModalWin = function() {
-        $scope.$win.hide();
-        $scope.$overlay.hide();
-        $scope.$modal.hide();
-    };
-
-    $scope.showModalLose = function() {
-        $scope.$lose.show();
-        $scope.$overlay.show();
-        $scope.$modal.fadeIn("slow");
-    };
-
-    $scope.hideModalLose = function() {
-        $scope.$lose.hide();
+    $scope.hideModal = function() {
         $scope.$overlay.hide();
         $scope.$modal.hide();
     };
 
     $scope.reset = function() {
         console.log("[reset] start");
-        $scope.hideModalWin();
-        $scope.hideModalLose();
+        $scope.hideModal();
         $scope.shuffleCards(this.cardsArray);
         $scope.setup();
         $scope.$game.show("slow");
@@ -367,8 +361,6 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
         // star game
         $scope.$game = $(".game");
-        $scope.$win = $(".win");
-        $scope.$lose = $(".lose");
         $scope.$modal = $(".modal");
         $scope.$overlay = $(".modal-overlay");
         $scope.$restartButton = $("button.restart");

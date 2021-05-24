@@ -16,6 +16,7 @@ class Token {
     // database connection and table name
     private $conn;
     private $table_name = "tokens";
+    private $log;
   
     // object properties
     public $code;
@@ -24,12 +25,12 @@ class Token {
     public $email;
     public $bar;
     public $time_elapsed;
-    public $play_errors;
-    public $prize;
+    public $wins;
     public $burned;
 
     public function __construct($db){
         $this->conn = $db;
+        $this->log = new DbLog($db);
     }
 
     public function import($object) {   
@@ -38,8 +39,8 @@ class Token {
         }
     }
 
-    function select($code) {
-        $query = "SELECT code, name, rut, email, bar, prize, time_elapsed, play_errors, burned, updated_at FROM " . $this->table_name;
+    function check($code) {
+        $query = "SELECT code, burned, updated_at FROM " . $this->table_name;
 
         if (!empty($code)) {
             $query .= " WHERE code = \"" . $code . "\"";
@@ -48,7 +49,35 @@ class Token {
         $query .= " ORDER BY updated_at";
 
         if ($GLOBALS['debug'] ) echo $query . "\n";
-        $this->dbLog("select", $query);
+        $this->log->info("select", $query);
+  
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+
+        $data = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+            extract($row);
+            $record = new stdClass();
+            $record->code = $code;
+            $record->burned = $burned;
+            $record->updated_at = $updated_at;
+            array_push($data,$record);
+        }
+  
+        return $data;
+    }
+
+    function select($code) {
+        $query = "SELECT code, name, rut, email, bar, time_elapsed, wins, burned, updated_at FROM " . $this->table_name;
+
+        if (!empty($code)) {
+            $query .= " WHERE code = \"" . $code . "\"";
+        }
+        
+        $query .= " ORDER BY updated_at";
+
+        if ($GLOBALS['debug'] ) echo $query . "\n";
+        $this->log->info("select", $query);
   
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -63,27 +92,13 @@ class Token {
             $record->email = $email;
             $record->bar = $bar;
             $record->time_elapsed = $time_elapsed;
-            $record->play_errors = $play_errors;           
-            $record->prize = $prize; // TODO revisar
+            $record->wins = $wins;
             $record->burned = $burned;
             $record->updated_at = $updated_at;
             array_push($data,$record);
         }
   
         return $data;
-    }
-
-    function readName(){
-        
-        $query = "SELECT name FROM " . $this->table_name . " WHERE id = ? limit 0,1";
-    
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->id);
-        $stmt->execute();
-    
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        $this->name = $row['name'];
     }
 
     function update() {
@@ -96,17 +111,16 @@ class Token {
             . " , email = \"" . $this->email . "\""
             . " , bar = \"" .  $this->bar . "\""
             . " , time_elapsed = \"" .  $this->time_elapsed . "\""
-            . " , play_errors = \"" .  $this->play_errors . "\""
-
-            // TODO check asingacion
-            // . " , prize = \"" . $this->prize . "\""
-
+            . " , wins = \"" .  $this->wins . "\""
             . " , burned = \"1\"" 
             . " , updated_at = now()"
             . " WHERE code = \"" . $this->code . "\"" ;
+            // SECURE TEST
+            //. " AND burned = \"0\""  
+
 
         if ($GLOBALS['debug'] ) echo $query . "\n";
-        $this->dbLog("update", $query);
+        $this->log->info("update", $query);
         
         $stmt = $this->conn->prepare($query);
         
@@ -120,22 +134,6 @@ class Token {
             return $data;
         }
 
-    }
-
-    function insert() {
-        $query = "INSERT INTO " . $this->table_name . "(code, name, rut, email, bar, prize_id, burned)"
-            . " VALUES (\"" . $this->name . "\",\"" . $this->rut . "\",\"" . $this->email . "\",\"" .  $this->bar . "\",\"" . $this->prize_id . "\"," . $this->burned . ")"
-            . " WHERE code = \"" . $this->code . "\"" ;  
-        echo $query;
-        //$stmt = $this->conn->prepare($query);
-        // $stmt->execute();
-    }
-
-    function dbLog($step, $query) {
-        $query_log = "INSERT INTO log (step, query, updated_at) VALUES (\"" . $step . "\", \"". htmlspecialchars(strip_tags($query)) . "\" ,now())";
-        if ($GLOBALS['debug'] ) echo $query_log . "\n";
-        $stmt = $this->conn->prepare($query_log);
-        $stmt->execute();
     }
 
     public static function writeJsonResponse($data) {

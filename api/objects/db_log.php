@@ -1,6 +1,6 @@
 <?php
 
-class Log {
+class DbLog {
   
     // database connection and table name
     private $conn;
@@ -13,6 +13,13 @@ class Log {
 
     public function __construct($db){
         $this->conn = $db;
+    }
+
+    function info($step, $query) {
+        $query_log = "INSERT INTO log (step, query, updated_at) VALUES (\"" . $step . "\", \"". htmlspecialchars(strip_tags($query)) . "\" ,now())";
+        if ($GLOBALS['debug'] ) echo $query_log . "\n";
+        $stmt = $this->conn->prepare($query_log);
+        $stmt->execute();
     }
 
     function select() {

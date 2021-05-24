@@ -15,7 +15,7 @@
 .card-game {
 	float: left;
 	width: 33.333333%;
-	height: 16vh;
+	height: 15vh;
 	padding: .5rem;
 	text-align: center;
 	display: block;
@@ -287,6 +287,6 @@
 	}
 
 	.card-game {
-		padding: .2rem;
+		padding: .1rem;
 	}
 }

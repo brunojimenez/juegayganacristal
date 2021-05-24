@@ -60,7 +60,7 @@
                     <?php
                     include_once 'config/config.php';
                     include_once 'config/database.php';
-                    include_once 'objects/log.php';
+                    include_once 'objects/db_log.php';
                     include_once 'util/util.php';
 
                     // prevent notices
@@ -73,9 +73,9 @@
                     $database = new Database();
                     $db = $database->getConnection();
                         
-                    $log = new Log($db);
+                    $log = new DbLog($db);
                     $data = $log->select();
-                    Log::writeTableResponse($data);
+                    DbLog::writeTableResponse($data);
                     ?>
                     </div>
                 </div>
