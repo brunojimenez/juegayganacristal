@@ -3,11 +3,11 @@
         <div class="row justify-content-center">
             <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-6">
                 <h1 class="mb-3 text-center">Ingresa tus datos y juega</h1>
-                
+
                 <div class="modal-overlay">
                     <div class="modal">
-                        <h1 class="mt-3 mt-5 text-center">{{text1}}</h1>
-                        <h2 class="mt-2 mb-5 text-center">{{text2}}</h2>
+                        <h1 class="mt-4 mb-4 text-center">{{text1}}</h1>
+                        <h2 class="mb-3 text-center">{{text2}}</h2>
                         <button class="btn btn-primary rounded-pill btn-lg w-100 mt-3" ng-click="hideModal()">Volver</a>
                     </div>
                 </div>
@@ -41,20 +41,20 @@
                         </div>
                         <div class="col-12 mb-2">
                             <label for="code" class="form-label form-control-label">Código Cristal</label>
-                            <input type="text" class="form-control form-control-lg" id="code"
-                                placeholder="Ej: 123ABC" value="" name="code" ng-model="code" required="">
+                            <input type="text" class="form-control form-control-lg" id="code" placeholder="Ej: 123ABC"
+                                value="" name="code" ng-model="code" required="">
                             <div class="invalid-feedback">
                                 Ingresa el Código Cristal.
                             </div>
                         </div>
                     </div>
-    
+
                     <hr class="my-3">
-                    <button class="btn btn-primary rounded-pill btn-lg w-100" type="submit" ng-click="goPlay()" ng-disabled="myForm.$invalid"> Comenzar a jugar</a>
-    
+                    <button class="btn btn-primary rounded-pill btn-lg w-100" type="submit" ng-click="goPlay()"
+                        ng-disabled="myForm.$invalid"> Comenzar a jugar</a>
+
                 </form>
             </div>
         </div>
     </div>
 </main>
-
