@@ -12254,10 +12254,10 @@ footer a:focus {
     max-width: 10rem;
 }
 
-@media (min-width: 320px) {
+@media (min-width: 320px) and (max-width: 576px)  {
     .masthead.inter {
         /* background-color: #f8f9fa; */
-        padding-top: 6rem;
+        padding-top: 5rem;
         padding-bottom: 3rem;
     }
 }
