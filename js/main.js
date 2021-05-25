@@ -131,10 +131,12 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
         $location.url("/bar/" + $scope.params.barId);
     }
 
+    $scope.pristine = true;
+
     // CONFIG
 
     $scope.counterMax = 60;
-    $scope.errorsMax = 10;
+    $scope.errorsMax = 3;
 
     // VARS
 
@@ -190,6 +192,13 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     // kinda messy but hey
     $scope.cardClicked = function() {
+
+        if ($scope.pristine) {
+            // star counter
+            $scope.countup();
+            $scope.pristine = false;
+        }
+
         var _ = $scope;
         var $card = $(this);
 
@@ -244,7 +253,8 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
             code: $cookies.get("code"),
             bar: $scope.params.barId,
             time_elapsed: $scope.counter,
-            wins: $scope.match
+            won: $scope.match,
+            lost: $scope.notMatch
         };
 
         console.log("[end] data:", $data);
@@ -356,8 +366,6 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
     $scope.init = function(cards) {
         console.log("[init] start");
 
-        // star counter
-        $scope.countup();
 
         // star game
         $scope.$game = $(".game");

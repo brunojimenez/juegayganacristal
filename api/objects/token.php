@@ -25,7 +25,8 @@ class Token {
     public $email;
     public $bar;
     public $time_elapsed;
-    public $wins;
+    public $won;
+    public $lost;
     public $burned;
 
     public function __construct($db){
@@ -68,7 +69,7 @@ class Token {
     }
 
     function select($code) {
-        $query = "SELECT code, name, rut, email, bar, time_elapsed, wins, burned, updated_at FROM " . $this->table_name;
+        $query = "SELECT code, name, rut, email, bar, time_elapsed, won, lost, burned, updated_at FROM " . $this->table_name;
 
         if (!empty($code)) {
             $query .= " WHERE code = \"" . $code . "\"";
@@ -76,11 +77,14 @@ class Token {
         
         $query .= " ORDER BY updated_at";
 
-        if ($GLOBALS['debug'] ) echo $query . "\n";
+        if ($GLOBALS['debug'] ) echo "query=" . $query . "\n";
         $this->log->info("select", $query);
   
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+        if ($GLOBALS['debug'] ) echo "errorInfo=" . $this->conn->errorInfo() . "\n";
+        
+        $status = $stmt->execute();
+        if ($GLOBALS['debug'] ) echo "status=" . ($status ? 'true' : 'false') . "\n";
 
         $data = [];
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
@@ -92,7 +96,8 @@ class Token {
             $record->email = $email;
             $record->bar = $bar;
             $record->time_elapsed = $time_elapsed;
-            $record->wins = $wins;
+            $record->won = $won;
+            $record->lost = $lost;
             $record->burned = $burned;
             $record->updated_at = $updated_at;
             array_push($data,$record);
@@ -111,7 +116,8 @@ class Token {
             . " , email = \"" . $this->email . "\""
             . " , bar = \"" .  $this->bar . "\""
             . " , time_elapsed = \"" .  $this->time_elapsed . "\""
-            . " , wins = \"" .  $this->wins . "\""
+            . " , won = \"" .  $this->won . "\""
+            . " , lost = \"" .  $this->lost . "\""
             . " , burned = \"1\"" 
             . " , updated_at = now()"
             . " WHERE code = \"" . $this->code . "\"" ;
@@ -119,18 +125,24 @@ class Token {
             //. " AND burned = \"0\""  
 
 
-        if ($GLOBALS['debug'] ) echo $query . "\n";
+        if ($GLOBALS['debug'] ) echo "query=" . $query . "\n";
         $this->log->info("update", $query);
         
         $stmt = $this->conn->prepare($query);
         
-        if ($stmt->execute()) {
+        $status = $stmt->execute();
+        if ($GLOBALS['debug'] ) echo "status=" . ($status ? 'true' : 'false') . "\n";
+        
+        if ($status) {
+            http_response_code(200);
             $data = new stdClass();
             $data->status = "OK";
             return $data;
         } else {
+            http_response_code(500);
             $data = new stdClass();
             $data->status = "NOK";
+            $data->message = implode(",", $stmt->errorInfo());
             return $data;
         }
 

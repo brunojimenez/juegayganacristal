@@ -12,7 +12,7 @@ class Award {
     public $token_id;
     public $name;
     public $bar;
-    public $wins;
+    public $won;
     public $updated_at;
 
     public function __construct($db){
@@ -20,18 +20,15 @@ class Award {
         $this->log = new DbLog($db);
     }
 
-    /*
-    function check($code) {
-        $query = "SELECT code, burned, updated_at FROM " . $this->table_name;
-
-        if (!empty($code)) {
-            $query .= " WHERE code = \"" . $code . "\"";
-        }
+    function report() {
+        $query = "SELECT a.id, a.name award, a.bar, t.code, t.name, t.rut, t.email, t.won, t.lost, t.time_elapsed, a.updated_at"
+            . " FROM awards a"
+            . " INNER JOIN tokens t ON a.token_id = t.code";
         
-        $query .= " ORDER BY updated_at";
+        $query .= " ORDER BY a.updated_at";
 
         if ($GLOBALS['debug'] ) echo $query . "\n";
-        $this->log->info("select", $query);
+        $this->log->info("report", $query);
   
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -40,42 +37,16 @@ class Award {
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
             extract($row);
             $record = new stdClass();
-            $record->code = $code;
-            $record->burned = $burned;
-            $record->updated_at = $updated_at;
-            array_push($data,$record);
-        }
-  
-        return $data;
-    }
-
-    function select($code) {
-        $query = "SELECT code, name, rut, email, bar, time_elapsed, wins, burned, updated_at FROM " . $this->table_name;
-
-        if (!empty($code)) {
-            $query .= " WHERE code = \"" . $code . "\"";
-        }
-        
-        $query .= " ORDER BY updated_at";
-
-        if ($GLOBALS['debug'] ) echo $query . "\n";
-        $this->log->info("select", $query);
-  
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
-
-        $data = [];
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-            extract($row);
-            $record = new stdClass();
+            $record->id = $id;
+            $record->award = $award;
+            $record->bar = $bar;
             $record->code = $code;
             $record->name = $name;
             $record->rut = $rut;
             $record->email = $email;
-            $record->bar = $bar;
+            $record->won = $won;
+            $record->lost = $lost;
             $record->time_elapsed = $time_elapsed;
-            $record->wins = $wins;
-            $record->burned = $burned;
             $record->updated_at = $updated_at;
             array_push($data,$record);
         }
@@ -83,6 +54,7 @@ class Award {
         return $data;
     }
 
+    /*
     function update() {
 
         $this->burned = "1";
@@ -93,7 +65,7 @@ class Award {
             . " , email = \"" . $this->email . "\""
             . " , bar = \"" .  $this->bar . "\""
             . " , time_elapsed = \"" .  $this->time_elapsed . "\""
-            . " , wins = \"" .  $this->wins . "\""
+            . " , won = \"" .  $this->won . "\""
             . " , burned = \"1\"" 
             . " , updated_at = now()"
             . " WHERE code = \"" . $this->code . "\"" ;
@@ -119,30 +91,42 @@ class Award {
     }
     */
 
-    function assign($bar, $code, $wins) {
+    function assign($data, $bar, $code, $won, $lost) {
 
         $query = "SELECT id, name FROM " . $this->table_name 
             . " WHERE bar = \"" . $bar ."\""
             . "   AND token_id = \"\" "
-            . "   AND wins <= " . $wins 
-            . " ORDER BY wins DESC LIMIT 1";
+            . "   AND won <= " . $won
+            . "   AND lost >= " . $lost 
+            . " ORDER BY won DESC "
+            . " , lost ASC "
+            . " LIMIT 1";
         
         if ($GLOBALS['debug'] ) echo $query . "\n";
         $this->log->info("assign", $query);
 
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+
+        if (!$stmt->execute()) {
+            http_response_code(200);
+            $data->status = "NOK";
+            $data->message = implode(",", $stmt->errorInfo());
+            $data->award = "";
+            return;
+        }
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
             extract($row);
             $this->id = $id;
             $this->name = $name;
         }
-        if ($GLOBALS['debug'] ) echo "id=" . $this->id . "\n";
-        if ($GLOBALS['debug'] ) echo "name=" . $this->name . "\n";
 
         if (is_null($this->id)) {
-            return "";
+            http_response_code(200);
+            $data->status = "OK";
+            $data->message = "Puntaje insuficiente o no hay premios para asignar.";
+            $data->award = "";
+            return;
         }
 
         $query = "UPDATE " . $this->table_name . " SET token_id = \"" . $code . "\", updated_at = now() WHERE id = \"" . $this->id . "\"";
@@ -150,12 +134,56 @@ class Award {
         $this->log->info("assign", $query);
 
         $stmt = $this->conn->prepare($query);
-
+        
         if ($stmt->execute()) {
-            return $this->name;
+            http_response_code(200);
+            $data->status = "OK";
+            $data->message = "";
+            $data->award = $this->name;
         } else {
-            return "";
+            http_response_code(200);
+            $data->status = "NOK";
+            $data->message = implode(",", $stmt->errorInfo());
+            $data->award = "";
         }
+    }
+
+    public static function writeTableResponse($data) {
+        echo "<table class=\"table table-striped table-hover table-sm\">";
+        echo "<thead class=\"thead-dark\">";
+        echo "<tr>";
+        echo "<th scope=\"col\">ID</th>";
+        echo "<th scope=\"col\">PREMIO</th>";
+        echo "<th scope=\"col\">BAR</th>";
+        echo "<th scope=\"col\">CÓDIGO</th>";
+        echo "<th scope=\"col\">NOMBRE</th>";
+        echo "<th scope=\"col\">RUT</th>";
+        echo "<th scope=\"col\">CORREO</th>";
+        echo "<th scope=\"col\">ACIERTOS</th>";
+        echo "<th scope=\"col\">ERRORES</th>";
+        echo "<th scope=\"col\">TIEMPO (s)</th>";
+        echo "<th scope=\"col\">FECHA ACTUALIACIÓN</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
+        foreach ($data as &$row) {
+            echo "<tr>";
+            echo "<td>" . $row->id . "</td>";
+            echo "<td>" . $row->award . "</td>";
+            echo "<td>" . $row->bar . "</td>";
+            echo "<td>" . $row->code . "</td>";
+            echo "<td>" . $row->name . "</td>";
+            echo "<td>" . $row->rut . "</td>";
+            echo "<td>" . $row->email . "</td>";
+            echo "<td>" . $row->won . "</td>";
+            echo "<td>" . $row->lost . "</td>";
+            echo "<td>" . $row->time_elapsed . "</td>";
+            echo "<td>" . $row->updated_at . "</td>";
+            echo "</tr>";
+        }
+        echo "</tbody>";
+        echo "</table>";
+        exit();
     }
  
 }

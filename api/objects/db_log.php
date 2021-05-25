@@ -16,14 +16,16 @@ class DbLog {
     }
 
     function info($step, $query) {
+        // add return
+        $query .= "\n";
+
         $query_log = "INSERT INTO log (step, query, updated_at) VALUES (\"" . $step . "\", \"". htmlspecialchars(strip_tags($query)) . "\" ,now())";
-        if ($GLOBALS['debug'] ) echo $query_log . "\n";
         $stmt = $this->conn->prepare($query_log);
         $stmt->execute();
     }
 
     function select() {
-        $query = "SELECT step, query, updated_at FROM " . $this->table_name . " ORDER BY updated_at DESC LIMIT 100";
+        $query = "SELECT step, query, updated_at FROM " . $this->table_name . " ORDER BY updated_at DESC LIMIT 15";
 
         if ($GLOBALS['debug'] ) echo $query . "\n";
   
@@ -44,12 +46,23 @@ class DbLog {
     }
 
     public static function writeTableResponse($data) {
-        echo "<table>";
+        echo "<table class=\"table table-striped table-hover table-sm\">";
+        echo "<thead class=\"thead-dark\">";
+        echo "<tr>";
+        echo "<th scope=\"col\">PASO</th>";
+        echo "<th scope=\"col\">CONSULTA</th>";
+        echo "<th scope=\"col\">FECHA ACTUALIZACIÓN</th>";
+        echo "</tr>";
+        echo "</thead>";
+        echo "<tbody>";
         foreach ($data as &$row) {
             echo "<tr>";
-            echo "<td>" . json_encode($row) . "</td>";
+            echo "<td>" . $row->step. "</td>";
+            echo "<td>" . $row->query. "</td>";
+            echo "<td>" . $row->updated_at. "</td>";
             echo "</tr>";
         }
+        echo "</tbody>";
         echo "</table>";
         exit();
     }

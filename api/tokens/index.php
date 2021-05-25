@@ -64,7 +64,7 @@ function doPost($db, $request, $json) {
 
     if ($data->status == "OK") {
         $award = new Award($db);
-        $data->award = $award->assign($token->bar, $token->code, $token->wins);
+        $award->assign($data, $token->bar, $token->code, $token->won, $token->lost);
     } else {
         $data->award = "";
     }
@@ -78,5 +78,8 @@ function handle_error($db, $request) {
     $data->status = "handle_error";
     Token::writeJsonResponse($data);
 }
+
+// $data->errorMessage = error_get_last();
+// error_clear_last();
 
 ?>
