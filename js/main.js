@@ -277,9 +277,13 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
                 // check awards 
                 if ($award) {
+                    $fecha = new Date().toLocaleString("es-ES");
+                    console.log("[end] fecha:", $fecha);
+
                     $scope.text1 = "¡Ganaste!";
-                    $scope.text2 = "Has ganado: " + $award + ". Con el código " + $cookies.get("code");
-                    $scope.text3 = "Debes cobrarlo en los próximos 15 minutos acercandote a la barra y mostrando este resultado.";
+                    $scope.text2 = "Has ganado: " + $award;
+                    $scope.text3 = "Con el código " + $cookies.get("code");
+                    $scope.text4 = "Debes cobrarlo en los próximos 15 minutos acercandote a la barra y mostrando este resultado (" + $fecha + ")";
                     setTimeout(function(){
                         $scope.showModal();
                         $scope.$game.fadeOut();
@@ -288,6 +292,7 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
                     $scope.text1 = "¡Sigue participando!";
                     $scope.text2 = "Intentalo nuevamente con otro código Cristal";
                     $scope.text3 = "";
+                    $scope.text4 = "";
                     setTimeout(function(){
                         $scope.showModal();
                         $scope.$game.fadeOut();
@@ -296,7 +301,8 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
             } else {
                 $scope.text1 = "¡Ops un error!";
                 $scope.text2 = "Ha ocurrido un error inesperado, intentalo nuevamente";
-                $scope.text3 = "Algo ha ocurrido en el servidor que no ha podido procesar tu solicitud.";
+                $scope.text3 = "";
+                $scope.text4 = "Algo ha ocurrido en el servidor que no ha podido procesar tu solicitud.";
                 setTimeout(function(){
                     $scope.showModal();
                     $scope.$game.fadeOut();
@@ -306,7 +312,8 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
             console.log("[end] error:", response);
             $scope.text1 = "¡Ops un error!";
             $scope.text2 = "Ha ocurrido un error inesperado, intentalo nuevamente";
-            $scope.text3 = "Verifica que tu conexión sea estable.";
+            $scope.text3 = "";
+            $scope.text4 = "Verifica que tu conexión sea estable.";
             setTimeout(function(){
                 $scope.showModal();
                 $scope.$game.fadeOut();
