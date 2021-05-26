@@ -28,7 +28,6 @@ class Award {
         $query .= " ORDER BY a.updated_at";
 
         if ($GLOBALS['debug'] ) echo $query . "\n";
-        $this->log->info("report", $query);
   
         $stmt = $this->conn->prepare($query);
         $stmt->execute();

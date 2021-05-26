@@ -127,16 +127,12 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
     console.log("[playCtrl] start", $routeParams);
     $scope.params = $routeParams;
 
-    $scope.goLogin = () => {
-        $location.url("/bar/" + $scope.params.barId);
-    }
-
     $scope.pristine = true;
 
     // CONFIG
 
     $scope.counterMax = 60;
-    $scope.errorsMax = 3;
+    $scope.errorsMax = 6;
 
     // VARS
 
@@ -150,7 +146,12 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     $scope.timerRunning = false;
 
+    $scope.goLogin = () => {
+        $location.url("/bar/" + $scope.params.barId);
+    }
+
     $scope.countup = function() {
+        console.log("[countup] start");
         $scope.timerRunning = true;
         stopped = $timeout(function() {
             $scope.counter++;
@@ -162,7 +163,8 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
         }, 1000); //1000 milliseconds = 1 second
     };
 
-    $scope.stop = function(){
+    $scope.stop = function() {
+        console.log("[stop] start");
         $scope.timerRunning = false;
         $timeout.cancel(stopped);
     }; 
@@ -192,15 +194,17 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     // kinda messy but hey
     $scope.cardClicked = function() {
+        console.log("[cardClicked] start");
+
+        var _ = $scope;
+        var $card = $(this);
 
         if ($scope.pristine) {
+            console.log("[cardClicked] pristine...");
             // star counter
             $scope.countup();
             $scope.pristine = false;
         }
-
-        var _ = $scope;
-        var $card = $(this);
 
         if(!_.paused && !$card.find(".inside").hasClass("matched") && !$card.find(".inside").hasClass("picked")){
             $card.find(".inside").addClass("picked");
@@ -241,9 +245,9 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     $scope.end = function() {
         console.log("[end] start");
-
-        $scope.stop(); // stop counter
+        
         $scope.paused = true;
+        $scope.stop(); // stop counter
 
         $data = {
             code: $cookies.get("code"),
@@ -269,18 +273,16 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
             if ($data.status == "OK") {
                 
                 $award = $data.award;
-                console.log("[end] burned:", $award);
+                console.log("[end] award:", $award);
 
                 // check awards 
                 if ($award) {
+                    $scope.text1 = "¡Ganaste!";
+                    $scope.text2 = "Has ganado: " + $award + ". Con el código " + $cookies.get("code");
+                    $scope.text3 = "Debes cobrarlo en los próximos 15 minutos acercandote a la barra y mostrando este resultado.";
                     setTimeout(function(){
-                        $scope.text1 = "¡Ganaste!";
-                        $scope.text2 = "Has ganado: " + $award + ". Con el código " + $cookies.get("code");
-                        $scope.text3 = "Debes cobrarlo en los próximos 15 minutos acercandote a la barra y mostrando este resultado.";
-                        setTimeout(function(){
-                            $scope.showModal();
-                            $scope.$game.fadeOut();
-                        }, 1000);
+                        $scope.showModal();
+                        $scope.$game.fadeOut();
                     }, 1000);
                 } else {
                     $scope.text1 = "¡Sigue participando!";
@@ -365,7 +367,6 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     $scope.init = function(cards) {
         console.log("[init] start");
-
 
         // star game
         $scope.$game = $(".game");
