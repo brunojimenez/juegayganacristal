@@ -1,15 +1,11 @@
 .wrap {
 	position: relative;
-	height: 100%;
-	min-height: 500px;
-	padding-bottom: 20px;
+    height: auto;
 }
 
 .game {
 	transform-style: preserve-3d;
-	perspective: 500px;
-	min-height: 100%;
-	height: 100%;
+    perspective: 500px;
 }
 
 .card-game {
@@ -276,7 +272,7 @@
 	.card-game {
 		/* width: 25%; */
 		width: 33.333333%;
-		height: 13vh;
+		height: 12.5vh;
 	}
 
 	.card-game {
@@ -284,7 +280,7 @@
 	}
 }
 
-@media (max-width: 360px) and (max-width: 575.97px) {
+@media (min-width: 320px) and (max-width: 575.97px) {
 	.card-game .front {
 		padding: .3rem;
 	}
@@ -296,7 +292,7 @@
 	.card-game {
 		/* width: 25%; */
 		width: 33.333333%;
-		height: 14vh;
+		height: 12vh;
 	}
 
 	.card-game {
@@ -304,6 +300,13 @@
 	}
 
 	.modal {
-		width: 84%;
+		width: 88%;
+	}
+	span.text-ind {
+		font-size: .8rem;
+		font-family: 'gotham_htfbold', Arial, Verdana, Helvetica, sans-serif;
+		text-transform: uppercase;
+		font-weight: 300;
+		color: #000;
 	}
 }
