@@ -131,12 +131,11 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     // CONFIG
 
-    $scope.counterMax = 60;
     $scope.errorsMax = 6;
 
     // VARS
 
-    $scope.counter = 0;
+    $scope.counter = 60;
     $scope.match = 0;
     $scope.notMatch = 0;
 
@@ -150,15 +149,15 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
         $location.url("/bar/" + $scope.params.barId);
     }
 
-    $scope.countup = function() {
+    $scope.countdown = function() {
         console.log("[countup] start");
         $scope.timerRunning = true;
         stopped = $timeout(function() {
-            $scope.counter++;
-            if ($scope.counter >= $scope.counterMax) {
+            $scope.counter--;
+            if ($scope.counter <= 0) {
                 $scope.end();
             } else {
-                $scope.countup(); 
+                $scope.countdown(); 
             }
         }, 1000); //1000 milliseconds = 1 second
     };
@@ -202,7 +201,7 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
         if ($scope.pristine) {
             console.log("[cardClicked] pristine...");
             // star counter
-            $scope.countup();
+            $scope.countdown();
             $scope.pristine = false;
         }
 
