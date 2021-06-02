@@ -131,6 +131,7 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     // CONFIG
 
+    $scope.counterMax = 60;
     $scope.errorsMax = 6;
 
     // VARS
@@ -279,17 +280,17 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
                     $fecha = new Date().toLocaleString("es-ES");
                     console.log("[end] fecha:", $fecha);
 
-                    $scope.text1 = "¡Ganaste!";
+                    $scope.text1 = "¡Felicidades!";
                     $scope.text2 = "Has ganado: " + $award;
-                    $scope.text3 = "Con el código " + $cookies.get("code");
-                    $scope.text4 = "Debes cobrarlo en los próximos 15 minutos acercandote a la barra y mostrando este resultado (" + $fecha + ")";
+                    $scope.text3 = "Código: " + $cookies.get("code");
+                    $scope.text4 = "Acércate a la barra dentro de los próximos 15 minutos, muestra tu resultado y recibe tu premio. (" + $fecha + ")";
                     setTimeout(function(){
                         $scope.showModal();
                         $scope.$game.fadeOut();
                     }, 1000);
                 } else {
-                    $scope.text1 = "¡Sigue participando!";
-                    $scope.text2 = "Intentalo nuevamente con otro código Cristal";
+                    $scope.text1 = "fin del juego";
+                    $scope.text2 = "Puedes volver a participar ingresado otro código Cristal.";
                     $scope.text3 = "";
                     $scope.text4 = "";
                     setTimeout(function(){
