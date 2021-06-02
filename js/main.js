@@ -129,14 +129,10 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     $scope.pristine = true;
 
-    // CONFIG
-
-    $scope.counterMax = 45;
-    $scope.errorsMax = 5;
-
     // VARS
-
-    $scope.counter = 60;
+    
+    $scope.errorsMax = 5;
+    $scope.counter = 45;
     $scope.match = 0;
     $scope.notMatch = 0;
 
