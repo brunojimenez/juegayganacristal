@@ -131,8 +131,8 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
 
     // CONFIG
 
-    $scope.counterMax = 60;
-    $scope.errorsMax = 6;
+    $scope.counterMax = 45;
+    $scope.errorsMax = 5;
 
     // VARS
 
