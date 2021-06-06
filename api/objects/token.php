@@ -68,6 +68,16 @@ class Token {
         return $data;
     }
 
+    function burn($code) {
+        $query = "UPDATE " . $this->table_name . " SET burned = \"2\" WHERE code = \"" . $code . "\"";
+        
+        if ($GLOBALS['debug'] ) echo $query . "\n";
+        $this->log->info("update", $query);
+  
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+    }
+
     function select($code) {
         $query = "SELECT code, name, rut, email, bar, time_elapsed, won, lost, burned, updated_at FROM " . $this->table_name;
 
@@ -120,10 +130,8 @@ class Token {
             . " , lost = \"" .  $this->lost . "\""
             . " , burned = \"1\"" 
             . " , updated_at = now()"
-            . " WHERE code = \"" . $this->code . "\"" ;
-            // SECURE TEST
-            //. " AND burned = \"0\""  
-
+            . " WHERE code = \"" . $this->code . "\""
+            . " AND (burned = \"0\" OR burned = \"2\") ";  
 
         if ($GLOBALS['debug'] ) echo "query=" . $query . "\n";
         $this->log->info("update", $query);

@@ -28,7 +28,7 @@ app.controller('loginCtrl', function($scope, $http, $rootScope, $routeParams, $i
 
     $scope.myForm = {}; 
 
-    $scope.goPlay = () => {
+    $scope.goPlay = function() {
         console.log("[goPlay] start", $scope.myForm);
         
         if (!$scope.myForm.$valid) {
@@ -66,7 +66,6 @@ app.controller('loginCtrl', function($scope, $http, $rootScope, $routeParams, $i
                 if ($row.burned == "0") {
                     console.log("[goPlay] codigo disponible");
                     $location.url("/bar/" + $scope.params.barId + "/play");
-                    return true;
                 } else {
                     console.log("[goPlay] codigo quemado");
 
@@ -92,7 +91,6 @@ app.controller('loginCtrl', function($scope, $http, $rootScope, $routeParams, $i
             $scope.text2 = "Ha ocurrido un error inesperado, intentalo nuevamente";
 
             $scope.showModal();
-            return false; 
         });
 
     }
@@ -244,7 +242,55 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
         
         $scope.paused = true;
         $scope.stop(); // stop counter
+        $scope.endCheck();
+    };
 
+    $scope.endCheck = function () {
+        $http({
+            url: "api/tokens/", 
+            method: "GET",
+            params: {
+                code: $cookies.get("code")
+            }
+        }).then(function(response) {
+            console.log("[goPlay] success:", response);
+            $data = response.data;
+            if ($data.length == 1) {
+                $row = $data[0];
+                console.log("[goPlay] burned:", $row.burned);
+
+                if ($row.burned == "0" || $row.burned == "2") {
+                    console.log("[goPlay] codigo disponible");
+                    $scope.endUpdate();
+                } else {
+                    console.log("[goPlay] codigo quemado");
+
+                    $scope.text1 = "C\u00F3digo usado";
+                    $scope.text2 = "Intenta con otro c\u00F3digo Cristal";
+
+                    $scope.showModal();
+                    $scope.myForm.code = "";
+                }
+            } else {
+                console.log("[goPlay] codigo invalido");
+                
+                $scope.text1 = "C\u00F3digo inv\u00E1lido";
+                $scope.text2 = "Intenta con otro c\u00F3digo Cristal";
+
+                $scope.showModal();
+                $scope.myForm.code = "";
+            }
+        }, function(response) {
+            console.log("[goPlay] error:", response);
+
+            $scope.text1 = "¡Ops un error!";
+            $scope.text2 = "Ha ocurrido un error inesperado, intentalo nuevamente";
+
+            $scope.showModal();
+        });
+    }
+
+    $scope.endUpdate = function () {
         $data = {
             code: $cookies.get("code"),
             name: $cookies.get("name"),
@@ -257,24 +303,24 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
             lost: $scope.notMatch
         };
 
-        console.log("[end] data:", $data);
+        console.log("[endUpdate] data:", $data);
 
         $http({
             url: "api/tokens/", 
             method: "POST",
             data: $data
         }).then(function(response) {
-            console.log("[end] success:", response);
+            console.log("[endUpdate] success:", response);
             $data = response.data;
             if ($data.status == "OK") {
                 
                 $award = $data.award;
-                console.log("[end] award:", $award);
+                console.log("[endUpdate] award:", $award);
 
                 // check awards 
                 if ($award) {
                     $fecha = new Date().toLocaleString("es-ES");
-                    console.log("[end] fecha:", $fecha);
+                    console.log("[endUpdate] fecha:", $fecha);
 
                     $scope.text1 = "¡Felicidades!";
                     $scope.text2 = "Has ganado: " + $award;
@@ -315,7 +361,7 @@ app.controller('playCtrl', function($scope, $http, $rootScope, $routeParams, $ti
                 $scope.$game.fadeOut();
             }, 1000);
         });
-    };
+    }
 
     $scope.showModal = function() {
         $scope.$overlay.show();

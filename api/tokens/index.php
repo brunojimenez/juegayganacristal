@@ -47,6 +47,8 @@ function doGet($db, $request) {
     
     $token = new Token($db);
     $data = $token->check($code);
+    // Marca el token al inicio
+    $token->burn($code);
     Token::writeJsonResponse($data);
     echo $request;
 }
